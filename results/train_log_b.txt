@@ -1,0 +1,36 @@
+train rows 599884 (80 trips) | test rows 131570
+Baseline nearest-road: {'accuracy': 0.8661, 'precision': 0.5389, 'recall': 0.5397, 'macro_f1': 0.7305, 'log_loss': 2.1579, 'top1_accuracy': 0.5389, 'route_continuity': 0.415}
+
+=== XGBoost
+  fold 0: macro F1 0.9059  top-1 0.8444
+  fold 1: macro F1 0.9363  top-1 0.8978
+  fold 2: macro F1 0.9194  top-1 0.8555
+  fold 3: macro F1 0.8820  top-1 0.8181
+  fold 4: macro F1 0.8898  top-1 0.8264
+  student_test: {'accuracy': 0.9596, 'precision': 0.8734, 'recall': 0.8445, 'macro_f1': 0.9176, 'log_loss': 0.0977, 'top1_accuracy': 0.8681, 'route_continuity': 0.7796} train 50.2s
+train rows 599884 (80 trips) | test rows 131570
+Baseline nearest-road: {'accuracy': 0.8661, 'precision': 0.5389, 'recall': 0.5397, 'macro_f1': 0.7305, 'log_loss': 2.1579, 'top1_accuracy': 0.5389, 'route_continuity': 0.415}
+
+=== RandomForest
+  fold 0: macro F1 0.9070  top-1 0.8455
+  fold 1: macro F1 0.9335  top-1 0.8963
+  fold 2: macro F1 0.9166  top-1 0.8490
+  fold 3: macro F1 0.8817  top-1 0.8133
+  fold 4: macro F1 0.8939  top-1 0.8330
+  student_test: {'accuracy': 0.9604, 'precision': 0.8829, 'recall': 0.8383, 'macro_f1': 0.9185, 'log_loss': 0.0993, 'top1_accuracy': 0.8659, 'route_continuity': 0.7638} train 130.6s
+train rows 599884 (80 trips) | test rows 131570
+Baseline nearest-road: {'accuracy': 0.8661, 'precision': 0.5389, 'recall': 0.5397, 'macro_f1': 0.7305, 'log_loss': 2.1579, 'top1_accuracy': 0.5389, 'route_continuity': 0.415}
+
+=== MLP
+  fold 0: macro F1 0.9024  top-1 0.8416
+/home/alexa/Projects/ml-hack/.venv/lib/python3.12/site-packages/sklearn/neural_network/_multilayer_perceptron.py:785: ConvergenceWarning: Stochastic Optimizer: Maximum iterations (40) reached and the optimization hasn't converged yet.
+  warnings.warn(
+  fold 1: macro F1 0.9289  top-1 0.8911
+/home/alexa/Projects/ml-hack/.venv/lib/python3.12/site-packages/sklearn/neural_network/_multilayer_perceptron.py:785: ConvergenceWarning: Stochastic Optimizer: Maximum iterations (40) reached and the optimization hasn't converged yet.
+  warnings.warn(
+  fold 2: macro F1 0.9134  top-1 0.8455
+  fold 3: macro F1 0.8819  top-1 0.8166
+  fold 4: macro F1 0.8904  top-1 0.8290
+/home/alexa/Projects/ml-hack/.venv/lib/python3.12/site-packages/sklearn/neural_network/_multilayer_perceptron.py:785: ConvergenceWarning: Stochastic Optimizer: Maximum iterations (40) reached and the optimization hasn't converged yet.
+  warnings.warn(
+  student_test: {'accuracy': 0.9593, 'precision': 0.8762, 'recall': 0.8377, 'macro_f1': 0.9164, 'log_loss': 0.1016, 'top1_accuracy': 0.8669, 'route_continuity': 0.78} train 111.0s

@@ -1,0 +1,1 @@
+{"row": {"model": "NearestRoad (baseline)", "family": "Rule", "test_accuracy": 0.8661168959489245, "test_precision": 0.5389118277321905, "test_recall": 0.5397298994974874, "test_macro_f1": 0.7304989493675661, "test_log_loss": 2.1579407637894277, "test_top1_accuracy": 0.5389118277321905, "test_route_continuity": 0.4150493701055499}, "folds": []}
