@@ -6,3 +6,6 @@ xgboost-cpu   # or "xgboost" on machines with a GPU
 folium
 matplotlib
 joblib
+optuna
+fastapi
+uvicorn

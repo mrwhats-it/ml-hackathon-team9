@@ -63,3 +63,33 @@ number of candidates.
 whose probabilities rank candidates. Evaluated with 5-fold GroupKFold by trip (no trip in both train and
 validation) and on the 10 student-test trips. Metrics: accuracy, precision, recall, macro F1, log loss,
 observation-level Top-1 accuracy, candidate miss rate, route continuity, training/inference time.
+
+## Hyperparameter tuning, HMM and evaluation
+
+```bash
+python src/tune.py 20         # Optuna (TPE) Bayesian search on XGBoost -> results/tuning/, models/final_model.joblib
+python src/evaluate_hmm.py    # classifier-only vs classifier+HMM on student_test -> results/hmm/, results/maps/predicted_*.html
+```
+
+**HMM / Viterbi** (`src/hmm.py`): hidden states are each GPS point's candidate arcs; emission = log classifier
+probability; transition = `-|network distance - GPS distance| / 15 m`, where network distance is the shortest
+directed path between the two candidate positions (bounded Dijkstra). Unreachable pairs get a large finite
+penalty (-30) so decoding survives network holes and GPS gaps; points with no candidates are skipped.
+
+## Deployment (two laptops on the same Wi-Fi)
+
+**Laptop 1 – model + API**
+```bash
+source .venv/bin/activate
+# evaluation trips go in "Student folder/<partition>/<trip_id>/" (same layout as student_test)
+export PATHSNAP_PARTITION=student_test        # or the evaluator partition folder name
+uvicorn api.server:app --host 0.0.0.0 --port 8000
+```
+Find Laptop 1's IP (`ip addr` on Linux, `ipconfig` on Windows) and allow port 8000 through the firewall.
+The terminal prints the metrics and predicted arc sequence for every request.
+
+**Laptop 2 – UI**
+Open `ui/index.html` in a browser (needs internet for map tiles), enter `http://<laptop-1-ip>:8000`,
+click Connect, choose a trip, click Reconstruct route.
+
+API endpoints: `GET /trips`, `GET /predict/{trip_id}` (docs at `http://<ip>:8000/docs`).
