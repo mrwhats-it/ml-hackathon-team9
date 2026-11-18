@@ -1,0 +1,98 @@
+<!doctype html>
+<!-- PathSnap evaluator UI (Laptop 2). Open in a browser, enter Laptop 1's API address, pick a trip. -->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>PathSnap Evaluator</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<style>
+  body { margin: 0; font-family: system-ui, sans-serif; display: flex; height: 100vh; }
+  #side { width: 320px; padding: 16px; box-sizing: border-box; overflow-y: auto; background: #f6f7f9; }
+  #map { flex: 1; }
+  h1 { font-size: 20px; margin: 0 0 12px; }
+  label { display: block; font-size: 13px; margin: 10px 0 4px; color: #444; }
+  input, select, button { width: 100%; padding: 8px; font-size: 14px; box-sizing: border-box; }
+  button { margin-top: 12px; background: #1f6feb; color: #fff; border: 0; border-radius: 4px; cursor: pointer; }
+  button:disabled { background: #999; }
+  table { width: 100%; border-collapse: collapse; margin-top: 14px; font-size: 13px; }
+  td { padding: 4px 2px; border-bottom: 1px solid #ddd; }
+  td:last-child { text-align: right; font-variant-numeric: tabular-nums; }
+  #status { margin-top: 10px; font-size: 13px; color: #555; }
+  .legend { background: #fff; padding: 8px 10px; font-size: 13px; line-height: 20px; border-radius: 4px; }
+  .legend i { display: inline-block; width: 18px; height: 4px; margin-right: 6px; vertical-align: middle; }
+</style>
+</head>
+<body>
+<div id="side">
+  <h1>PathSnap</h1>
+  <label for="api">API address (Laptop 1)</label>
+  <input id="api" value="http://localhost:8000">
+  <button id="connect">Connect</button>
+  <label for="trip">Evaluation trip</label>
+  <select id="trip" disabled></select>
+  <button id="run" disabled>Reconstruct route</button>
+  <div id="status"></div>
+  <table id="metrics"></table>
+</div>
+<div id="map"></div>
+<script>
+const map = L.map("map").setView([51.67, 39.2], 12);
+L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", { attribution: "&copy; OpenStreetMap" }).addTo(map);
+let layers = [], control = null;
+const $ = id => document.getElementById(id);
+const status = t => { $("status").textContent = t; };
+
+const legend = L.control({ position: "bottomright" });
+legend.onAdd = () => {
+  const d = L.DomUtil.create("div", "legend");
+  d.innerHTML = '<i style="background:#1f77b4"></i>Raw GPS<br><i style="background:#2ca02c"></i>Reference route<br>' +
+                '<i style="background:#d62728"></i>Predicted route';
+  return d;
+};
+legend.addTo(map);
+
+$("connect").onclick = async () => {
+  try {
+    status("Connecting...");
+    const r = await fetch($("api").value + "/trips");
+    const d = await r.json();
+    $("trip").innerHTML = d.trips.map(t => `<option>${t}</option>`).join("");
+    $("trip").disabled = $("run").disabled = false;
+    status(`Connected. ${d.trips.length} trips in "${d.partition}".`);
+  } catch (e) { status("Cannot reach API: " + e); }
+};
+
+$("run").onclick = async () => {
+  $("run").disabled = true;
+  status("Running classifier + HMM...");
+  try {
+    const r = await fetch(`${$("api").value}/predict/${$("trip").value}`);
+    if (!r.ok) throw new Error(await r.text());
+    draw(await r.json());
+  } catch (e) { status("Error: " + e); }
+  $("run").disabled = false;
+};
+
+function draw(d) {
+  layers.forEach(l => map.removeLayer(l));
+  if (control) map.removeControl(control);
+  const gps = L.layerGroup(d.gps.map(p => L.circleMarker(p, { radius: 2, color: "#1f77b4", weight: 0, fillOpacity: .8 })));
+  const pred = L.polyline(d.predicted_lines, { color: "#d62728", weight: 4 });
+  const overlays = { "Raw GPS": gps, "Predicted route": pred };
+  if (d.reference_lines) overlays["Reference route"] = L.polyline(d.reference_lines, { color: "#2ca02c", weight: 8, opacity: .6 });
+  layers = Object.values(overlays);
+  ["Reference route", "Predicted route", "Raw GPS"].forEach(k => overlays[k] && overlays[k].addTo(map));
+  control = L.control.layers(null, overlays, { collapsed: false }).addTo(map);
+  map.fitBounds(L.latLngBounds(d.gps));
+  const names = { gps_points: "GPS points", predicted_arcs: "Predicted road segments", clf_top1: "Top-1 (classifier only)",
+                  hmm_top1: "Top-1 (classifier + HMM)", clf_continuity: "Continuity (classifier only)",
+                  hmm_continuity: "Continuity (classifier + HMM)", route_precision: "Route precision",
+                  route_recall: "Route recall", seconds: "Time (s)" };
+  $("metrics").innerHTML = Object.entries(d.metrics).map(([k, v]) => `<tr><td>${names[k] || k}</td><td>${v}</td></tr>`).join("");
+  status(`Trip ${d.trip_id} done (model: ${d.model}).`);
+}
+</script>
+</body>
+</html>
