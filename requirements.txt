@@ -1,0 +1,8 @@
+numpy
+pandas
+scikit-learn
+scipy
+xgboost-cpu   # or "xgboost" on machines with a GPU
+folium
+matplotlib
+joblib

@@ -1,2 +1,10 @@
 # Dataset (train / student_test)
 Student folder/
+
+# Generated candidate tables
+data/processed/
+
+# Python environment and cache
+.venv/
+__pycache__/
+*.pyc
